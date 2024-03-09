@@ -18,3 +18,8 @@ def verify_str(password, hashed_password):
 def get_jwt_token(payload, scretkey):
     token = jwt.encode(payload, scretkey, "HS256")
     return token
+
+
+def decode_jwt_token(token, scretkey):
+    decoded_token = jwt.decode(token, scretkey, algorithms=['HS256'])
+    return decoded_token

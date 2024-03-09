@@ -1,18 +1,36 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends
 import models
 from pydantic import BaseModel, EmailStr
 from dbconfig import engine, SessionLocal, session
-from tools.tools import hashstr, get_jwt_token, verify_str
-from cheifdata import secrettkey
+from tools.tools import (
+    hashstr,
+    get_jwt_token,
+    verify_str,
+    decode_jwt_token)
+from cheifdata import secretkey, jwtregexs
 import datetime
-
-app = FastAPI()
-router = APIRouter()
+from fastapi.middleware.cors import CORSMiddleware
+import re
 
 models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+
+router = APIRouter()
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def get_db():
@@ -39,7 +57,7 @@ db_dependency = Depends(get_db)
 
 def add_company(name, db):
     try:
-        company = models.Company(name=name)
+        company = models.Companies(name=name)
         db.add(instance=company)
         db.commit()
         db.refresh(company)
@@ -48,12 +66,12 @@ def add_company(name, db):
         return {"error": True}
 
 
-@router.post('/adduser')
+@router.post('/register')
 def adduser(user: User, db: Session = db_dependency):
     User = session.query(models.Users).filter(
         models.Users.email == user.email).first()
     if User:
-        return {"staus_code": 422, "message": "Email Already Exists"}
+        return {"staus_code": 422, "message": "User Already Exists"}
     else:
         company = add_company(user.companyname, db=db)
         Role = session.query(models.Roles).filter(
@@ -61,7 +79,7 @@ def adduser(user: User, db: Session = db_dependency):
         if company.get("company_id") and Role:
             try:
                 user = models.Users(email=user.email, password=hashstr(
-                    user.password), company_id=company.get("company_id"), rol_id=Role.id)
+                    user.password), company_id=company.get("company_id"), role_id=Role.id)
                 db.add(instance=user)
                 db.commit()
                 db.refresh(user)
@@ -72,7 +90,18 @@ def adduser(user: User, db: Session = db_dependency):
             return {"status_code": 409, "message": "Unkown Error"}
 
 
-@router.post("/loginuser")
+@router.post("/verifyauthenticator")
+def verifyauthenticator(token: str = Body(..., embed=True)):
+    if re.match(jwtregexs.get("headerpattern") + jwtregexs.get("payloadpattern") + jwtregexs.get("signaturepattern"), token):
+        print("ok")
+        data = decode_jwt_token(token=token, scretkey=secretkey)
+        if data.get("email") and data.get("user_id"):
+            print("ok")
+    else:
+        pass
+
+
+@router.post("/login")
 def loginuser(creds: Credentials):
     User = session.query(models.Users).filter(
         models.Users.email == creds.email).first()
@@ -82,7 +111,7 @@ def loginuser(creds: Credentials):
                 "email": User.email,
                 "user_id": User.id,
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=3)  # Token expiration time
-            }, secrettkey)
+            }, secretkey)
             return {"status_code": 200, "token": token, "message": "SuccessFully Authorized"}
     return {"status_code": 401, "message": "Unauthorized User"}
 

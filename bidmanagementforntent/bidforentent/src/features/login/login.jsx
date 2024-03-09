@@ -1,61 +1,96 @@
 import { Link } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { loginuser } from "./redux/loginSlice";
+import React from "react";
+import { Snackbar, Alert } from "@mui/material";
+import $ from "jquery"
+import tools from "../../tools/tools";
+import { history } from "../../app/history";
 export default function Login() {
+    const alertdefaultdata = {
+        severity: "",
+        message: "",
+        open: false
+    }
+    const handleClose = () => {
+        setAlertInfo(preState => ({
+            ...preState,
+            ...alertdefaultdata
+        }))
+    };
+    const [alertinfo, setAlertInfo] = React.useState(alertdefaultdata)
+    const dispatch = useDispatch()
+    const handleOnSubmit = async (event) => {
+        event.preventDefault()
+        $("#submit").prop("disabled", true);
+        let formData = new FormData(event.target)
+        formData = Object.fromEntries(formData)
+        const { payload } = await dispatch(loginuser(formData))
+        if (payload.status_code == 200) {
+            history.push("/app")
+            tools.setLocalStorage({ key: "userinfo", value: JSON.stringify(payload) })
+        }
+        else {
+            setAlertInfo(preState => ({
+                ...preState,
+                severity: "error",
+                message: payload.message,
+                open: true
+            }))
+        }
+        $("#submit").prop("disabled", false);
+    }
     return (
         <main>
-            <div class="container">
+            <div>
+                <Snackbar open={alertinfo.open} autoHideDuration={6000} onClose={handleClose}>
+                    <Alert
+                        onClose={handleClose}
+                        severity={alertinfo.severity}
+                        variant="filled"
+                        sx={{ width: '100%' }}
+                    >
+                        {alertinfo.message}
+                    </Alert>
+                </Snackbar>
+            </div>
+            <div className="container">
+                <section className="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+                    <div className="container">
+                        <div className="row justify-content-center">
+                            <div className="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+                                <div className="card mb-3">
 
-                <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
-{/* 
-                                <div class="d-flex justify-content-center py-4">
-                                    <a href="index.html" class="logo d-flex align-items-center w-auto">
-                                        <img src="assets/img/logo.png" alt="" />
-                                        <span class="d-none d-lg-block">NiceAdmin</span>
-                                    </a>
-                                </div> */}
+                                    <div className="card-body">
 
-                                <div class="card mb-3">
-
-                                    <div class="card-body">
-
-                                        <div class="pt-4 pb-2">
-                                            <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-                                            <p class="text-center small">Enter your username & password to login</p>
+                                        <div className="pt-4 pb-2">
+                                            <h5 className="card-title text-center pb-0 fs-4">Login to Your Account</h5>
+                                            <p className="text-center small">Enter your username & password to login</p>
                                         </div>
 
-                                        <div class="row g-3 needs-validation" novalidate>
+                                        <form className="row g-3 needs-validation" onSubmit={(event) => handleOnSubmit(event)}>
 
-                                            <div class="col-12">
-                                                <label for="yourUsername" class="form-label">Username</label>
-                                                <div class="input-group has-validation">
-                                                    <span class="input-group-text" id="inputGroupPrepend">@</span>
-                                                    <input type="text" name="username" class="form-control" id="yourUsername" />
-                                                    <div class="invalid-feedback">Please enter your username.</div>
+                                            <div className="col-12">
+                                                <label htmlFor="yourUsername" className="form-label">Email</label>
+                                                <div className="input-group has-validation">
+                                                    <span className="input-group-text" id="inputGroupPrepend">@</span>
+                                                    <input type="email" name="email" className="form-control" id="yourUsername" required />
+                                                    <div className="invalid-feedback">Please enter your username.</div>
                                                 </div>
                                             </div>
 
-                                            <div class="col-12">
-                                                <label for="yourPassword" class="form-label">Password</label>
-                                                <input type="password" name="password" class="form-control" id="yourPassword" />
-                                                <div class="invalid-feedback">Please enter your password!</div>
+                                            <div className="col-12">
+                                                <label htmlFor="yourPassword" className="form-label">Password</label>
+                                                <input type="password" name="password" className="form-control" id="yourPassword" required />
+                                                <div className="invalid-feedback">Please enter your password!</div>
                                             </div>
-
-                                            <div class="col-12">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="remember" value="true" id="rememberMe" />
-                                                    <label class="form-check-label" for="rememberMe">Remember me</label>
-                                                </div>
+                                            <div className="col-12">
+                                                <button className="btn btn-primary w-100" id="submit" type="submit">Login</button>
                                             </div>
-                                            <div class="col-12">
-                                                <button class="btn btn-primary w-100" type="submit">Login</button>
+                                            <div className="col-12">
+                                                <p className="small mb-0">Don't have account? <Link to="/register">Create an account</Link></p>
                                             </div>
-                                            <div class="col-12">
-                                                <p class="small mb-0">Don't have account? <Link to="/register">Create an account</Link></p>
-                                            </div>
-                                        </div>
+                                        </form>
 
                                     </div>
                                 </div>
