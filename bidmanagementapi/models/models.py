@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, CheckConstr
 from dbconfig import Base, session, roles
 
 
-class Company(Base):
+class Companies(Base):
     __tablename__ = "company"
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
@@ -28,7 +28,7 @@ class Users(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     email = Column(String, index=True, nullable=False)
     password = Column(String, index=True, nullable=False)
-    rol_id = Column(
+    role_id = Column(
         Integer,
         ForeignKey('role.id', ondelete='CASCADE'),
         nullable=False
@@ -43,3 +43,15 @@ class Users(Base):
         UniqueConstraint('email', name='email_uniq'),
     )
 # Add event listener for table creation/migration
+
+
+class Items(Base):
+    __tablename__ = "item"
+
+    id = Column(Integer, autoincrement=True,
+                primary_key=True, index=True)
+    name = Column(String, index=True, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('name', name='itemname_uniq'),
+    )
