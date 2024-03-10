@@ -23,3 +23,12 @@ def get_jwt_token(payload, scretkey):
 def decode_jwt_token(token, scretkey):
     decoded_token = jwt.decode(token, scretkey, algorithms=['HS256'])
     return decoded_token
+
+
+def check_jwt_exp(create_time):
+    date = datetime.datetime.utcfromtimestamp(create_time)
+    current_date = datetime.datetime.now()
+    if current_date < date:
+        return True
+    else:
+        return False

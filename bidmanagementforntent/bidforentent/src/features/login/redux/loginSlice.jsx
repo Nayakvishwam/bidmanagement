@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import login from "./loginapi";
+import Tools from "../../../tools/tools";
 const initialstate = {
     loginresponse: {},
     loading: false
@@ -13,6 +14,9 @@ export const loginuser = createAsyncThunk(
     actions.LOGINUSER,
     async (payload) => {
         const response = await login(payload);
+        if (response?.status_code == 200) {
+            Tools.setLocalStorage({ key: "userinfo", value: JSON.stringify(response.data) })
+        }
         return response
     }
 )

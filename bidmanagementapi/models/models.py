@@ -43,3 +43,15 @@ class Users(Base):
         UniqueConstraint('email', name='email_uniq'),
     )
 # Add event listener for table creation/migration
+
+
+class Items(Base):
+    __tablename__ = "item"
+
+    id = Column(Integer, autoincrement=True,
+                primary_key=True, index=True)
+    name = Column(String, index=True, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('name', name='itemname_uniq'),
+    )

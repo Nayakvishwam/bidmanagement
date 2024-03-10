@@ -3,13 +3,17 @@ const apiUrl = "http://127.0.0.1:8000/"
 export const apiPaths = {
     loginUrl: apiUrl + "api/login",
     registerUrl: apiUrl + "api/register",
+    verifyauthenticatorUrl: apiUrl + "api/verifyauthenticator",
+    itemsUrl: apiUrl + "api/items",
+    AdditemUrl: apiUrl + "api/additem",
+    DeleteitemUrl: apiUrl + "api/deleteitems"
 }
 
 export const masterCaller = {
     callfunc: async function callfunc({ ...params }) {
         const otherParams = ({ ...params }) => {
             let obj = {}
-            if (params.method == "post") {
+            if (params.method == "post" || params.method == "DELETE") {
                 obj["body"] = JSON.stringify(params.body)
             }
             return obj
@@ -23,7 +27,6 @@ export const masterCaller = {
         }).catch((err) => {
             return err
         })
-        console.log(response)
         return response
     },
     get: async function get({ ...params }) {

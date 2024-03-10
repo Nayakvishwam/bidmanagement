@@ -4,8 +4,8 @@ import { loginuser } from "./redux/loginSlice";
 import React from "react";
 import { Snackbar, Alert } from "@mui/material";
 import $ from "jquery"
-import tools from "../../tools/tools";
 import { history } from "../../app/history";
+import Tools from "../../tools/tools";
 export default function Login() {
     const alertdefaultdata = {
         severity: "",
@@ -27,8 +27,18 @@ export default function Login() {
         formData = Object.fromEntries(formData)
         const { payload } = await dispatch(loginuser(formData))
         if (payload.status_code == 200) {
-            history.push("/app")
-            tools.setLocalStorage({ key: "userinfo", value: JSON.stringify(payload) })
+            await new Promise((resolve, reject) => {
+                try {
+                    Tools.setLocalStorage({ key: "userinfo", value: JSON.stringify(payload.data) })
+                    resolve({ finish: true })
+                } catch (error) {
+                    reject(error)
+                }
+            }).then(response => {
+                if (response?.finish) {
+                    return history.push("/app")
+                }
+            })
         }
         else {
             setAlertInfo(preState => ({
