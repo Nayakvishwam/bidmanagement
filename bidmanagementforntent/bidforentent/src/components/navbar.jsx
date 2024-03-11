@@ -9,13 +9,17 @@ import { useLocation } from "react-router-dom"
 export default function Navbar() {
     const [tooglesidebar, setToogleSidebar] = useState(false)
     const location = useLocation();
+    var pathname = location.pathname
+    if (pathname.charAt(pathname.length - 1) != "/") {
+        pathname = pathname + "/"
+    }
     const { response } = useSelector(state => state.authenticatorReducer)
     return <header id="header" className="header fixed-top d-flex align-items-center">
 
         <div className="d-flex align-items-center justify-content-between">
             <MuiLink style={{ textDecoration: "none" }} className="logo d-flex align-items-center">
-                <i className={pagespaths[location.pathname].icon} />
-                <span className=" d-none d-lg-block" style={{ marginLeft: 10 }}>{pagespaths[location.pathname].name}</span>
+                <i className={pagespaths[pathname].icon} />
+                <span className=" d-none d-lg-block" style={{ marginLeft: 10 }}>{pagespaths[pathname].name}</span>
             </MuiLink>
             <i className="bi bi-list toggle-sidebar-btn" onClick={(event) => {
                 setToogleSidebar(!tooglesidebar)

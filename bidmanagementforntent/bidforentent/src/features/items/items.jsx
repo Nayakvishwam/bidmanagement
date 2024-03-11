@@ -3,14 +3,16 @@ import "../../assets/css/styles.css"
 import { useEffect, useState } from "react"
 import {
     Alert, Box,
-    Button, CircularProgress, Dialog,
+    Button, Dialog,
     DialogActions, DialogContent,
     DialogTitle, Link,
     Snackbar, TextField
 } from "@mui/material"
 import { useDispatch, useSelector } from "react-redux"
-import { additemApi, itemApi, deleteitemApi } from "./redux/itemsSlice"
+import { additemApi, itemApi, deleteitemApi, edititemApi } from "./redux/itemsSlice"
 import { getUserDetails } from "../../tools/tools";
+import Loader from "../../components/loader"
+
 export default function Items() {
     const dispatch = useDispatch()
     const { token } = getUserDetails()
@@ -43,11 +45,17 @@ export default function Items() {
             headerName: 'Actions',
             width: 150,
             renderCell: (params) => {
+                let row = {
+                    itemid: params.row.id,
+                    name: params.row.name
+                }
                 return <>
                     <a onMouseEnter={() => {
                         setData(preState => ({
                             ...preState,
-                            ["edititem"]: params.row
+                            ["edititem"]: row,
+                            editviewopen: true,
+                            open: false
                         }))
                     }
                     } style={{ color: "blue", cursor: "pointer", textDecoration: "none" }}><i className=" ri-pencil-fill"></i></a>
@@ -58,7 +66,7 @@ export default function Items() {
     const [rows, setRows] = useState([])
     const getItems = async () => {
         const { payload } = await dispatch(itemApi({ token: token }))
-        if (payload.status_code == 200) {
+        if (payload?.status_code == 200) {
             setRows(payload.data)
         }
     }
@@ -80,7 +88,7 @@ export default function Items() {
     return (
         <>
             <div>
-                <Snackbar open={data.alertinfo.open} autoHideDuration={6000} onClose={handleAlertClose}>
+                <Snackbar open={data.alertinfo.open} anchorOrigin={{ vertical: 'top', horizontal: 'center' }} autoHideDuration={6000} onClose={handleAlertClose}>
                     <Alert
                         onClose={handleAlertClose}
                         severity={data.alertinfo.severity}
@@ -101,7 +109,7 @@ export default function Items() {
                     {"Delete Item"}
                 </DialogTitle>
                 <DialogContent>
-                    Are You Sure You Want To Remove {data.selecteditem.length > 0 ? "Items" : "Item"}
+                    Are You Sure You Want To Remove {data.selecteditem.length > 1 ? "Items" : "Item"}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => handleClose("deleteopen")}>Cancel</Button>
@@ -114,7 +122,7 @@ export default function Items() {
                                 alertinfo: {
                                     severity: "success",
                                     open: true,
-                                    message: `Remove ${data.selecteditem > 1 ? "Items" : "Item"} Details!`
+                                    message: `Remove ${data.selecteditem.length > 1 ? "Items" : "Item"} Details!`
                                 }
                             }))
                             getItems()
@@ -126,13 +134,13 @@ export default function Items() {
                 </DialogActions>
             </Dialog>
             <Dialog
-                open={data.open}
-                onClose={() => handleClose("open")}
+                open={data.open || data.editviewopen}
+                onClose={() => handleClose(data.open ? "open" : "editviewopen")}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    {"Add Item"}
+                    {data.editviewopen ? "Edit" : "Add"} Item
                 </DialogTitle>
                 <DialogContent>
                     <TextField
@@ -143,10 +151,14 @@ export default function Items() {
                         name="name"
                         type="text"
                         fullWidth
+                        value={data.editviewopen ? data.edititem?.name : null}
                         onChange={({ target }) => {
                             setData(preState => ({
                                 ...preState,
-                                ["itemdata"]: {
+                                [data.editviewopen ? "edititem" : "itemdata"]: data.editviewopen ? {
+                                    ...data.edititem,
+                                    name: target.value
+                                } : {
                                     name: target.value
                                 }
                             }))
@@ -154,10 +166,12 @@ export default function Items() {
                         variant="standard" />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => handleClose("open")}>Cancel</Button>
+                    <Button onClick={() => handleClose(data.open ? "open" : "editviewopen")}>Cancel</Button>
                     <Button onClick={async () => {
-                        if (data.itemdata.name) {
-                            const { payload } = await dispatch(additemApi({ token: token, name: data.itemdata.name }))
+                        if (data.open ? data.itemdata.name : data.edititem.name) {
+                            const { payload } = await dispatch(data.open ?
+                                additemApi({ token: token, name: data.itemdata.name }) :
+                                edititemApi({ token: token, ...data.edititem }))
                             if (payload?.status_code == 200) {
                                 setData(preState => ({
                                     ...preState,
@@ -165,12 +179,12 @@ export default function Items() {
                                     alertinfo: {
                                         severity: "success",
                                         open: true,
-                                        message: `Add New Item Details!`
+                                        message: `${data.editviewopen ? "Edit" : "Add New"} Item Details!`
                                     }
                                 }))
                                 getItems()
                             }
-                            else if (payload?.status_code == 400) {
+                            else if (payload) {
                                 setData(preState => ({
                                     ...preState,
                                     open: false,
@@ -181,26 +195,16 @@ export default function Items() {
                                     }
                                 }))
                             }
-                            handleClose("open")
+                            handleClose(data.open ? "open" : "editviewopen")
                         }
                     }}>
-                        Add
+                        {data.open ? "Add" : "Edit"}
                     </Button>
                 </DialogActions>
             </Dialog>
             {loading
                 && (
-                    <Box>
-                        <div className="container-fluid" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-                            <div className="row justify-content-center">
-                                <div className="col-md-12">
-                                    <div className="container">
-                                        <CircularProgress />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Box>
+                    <Loader />
                 )
             }
             {!loading && (<section className="section">

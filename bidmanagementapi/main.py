@@ -131,6 +131,7 @@ def verifyauthenticator(token: str = Body(..., embed=True)):
                         return {"status_code": 200, "data": userdata, "message": "Validate Authenticator"}
         return {"status_code": 400, "message": "Invalid Payload"}
     except Exception as err:
+        print(err)
         return {"status_code": 409, "message": "Unkown Error"}
 
 
@@ -209,13 +210,11 @@ async def additem(token: str = Body(..., embed=True),
     authentication = checkaccess_rights(token=token, path="/api/edititem")
     if authentication.get("allow"):
         try:
-            Item = session.query(models.Items).filter(
-                models.Items.name == name, models.Items.id == itemid).first()
+            Item = session.query(models.Items).filter_by(id=itemid).first()
             if Item:
                 Item.name = name
-                Item.id = itemid
-                db.commit()
-                db.close()
+                session.commit()
+                session.close()
                 return {"status_code": 200, "message": "Edit Item Details"}
             else:
                 return {"status_code": 404, "message": "Item Not Exists"}
@@ -260,5 +259,91 @@ async def getItems(token: str = Body(..., embed=True), db: Session = db_dependen
         return {"status_code": 200, "data": data, "message": "Items Details"}
     return authentication
 
+
+def addauctionlineitem(**kwargs):
+    kwargs = kwargs.get("data")
+    try:
+        auctionlineitem = models.AuctionsLinesItems(
+            auction_id=kwargs.get("auction_id"),
+            item_id=kwargs.get("item_id"),
+            quantity=kwargs.get("quantity")
+        )
+        db = kwargs.get("db")
+        db.add(instance=auctionlineitem)
+        db.commit()
+        db.refresh(auctionlineitem)
+        return True
+    except Exception as err:
+        print(err)
+        return False
+
+
+@router.post("/addauction")
+async def additem(token: str = Body(..., embed=True),
+                  item_id: int = Body(..., embed=True),
+                  company_id: int = Body(..., embed=True),
+                  quantity: int = Body(..., embed=True),
+                  description: str = Body(..., embed=True),
+                  db: Session = db_dependency):
+    '''
+    /addauction - User To Add Auction
+    '''
+    authentication = checkaccess_rights(token=token, path="/api/addauction")
+    if authentication.get("allow"):
+        try:
+            Item = session.query(models.Items).filter(
+                models.Items.id == item_id).first()
+            if Item:
+                Company = session.query(models.Companies).filter(
+                    models.Companies.id == company_id).first()
+                if Company:
+                    auction = models.Auctions(
+                        description=description, company_id=company_id)
+                    db.add(instance=auction)
+                    db.commit()
+                    db.refresh(auction)
+                    if auction:
+                        auctionlineitem = addauctionlineitem(data={
+                            "auction_id": auction.id,
+                            "item_id": item_id,
+                            "quantity": quantity,
+                            "db": db
+                        })
+                        if auctionlineitem:
+                            return {"status_code": 200, "message": "Add New Auction Details"}
+                    return {"statuc_code": 409, "message": "Known Error"}
+                else:
+                    return {"status_code": 404, "message": "Company is Not Exists"}
+            else:
+
+                return {"status_code": 404, "message": "Item IS Not Exists"}
+        except IntegrityError as err:
+            return {"statuc_code": 409, "message": str(err)}
+    return authentication
+
+
+@router.post("/getauctions")
+async def getautctions(token: str = Body(..., embed=True), db: Session = db_dependency):
+    '''
+    /getautctions- Used To Get Auctions
+    '''
+    authentication = checkaccess_rights(token=token, path="/api/getauctions")
+    if authentication.get("allow"):
+        maindata = []
+        data = db.query(models.Companies, models.Auctions, models.AuctionsLinesItems, models. Items).\
+            join(models.Auctions, models.Companies.id == models.Auctions.company_id).\
+            join(models.AuctionsLinesItems, models.Auctions.id == models.AuctionsLinesItems.auction_id).\
+            join(models.Items, models.AuctionsLinesItems.item_id == models.Items.id).\
+            data = data.all()
+        for company, auction in data:
+            info = {
+                "id": auction.id,
+                "description": auction.description,
+                "companyname": company.name,
+                "companyid": company.id
+            }
+            maindata.append(info)
+        return {"status_code": 200, "data": maindata, "message": "Auctions Details"}
+    return authentication
 
 app.include_router(router, prefix="/api")

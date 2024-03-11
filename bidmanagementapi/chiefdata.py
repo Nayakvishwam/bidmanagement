@@ -8,7 +8,14 @@ rightsallow = {
             "/api/items",
             "/api/additem",
             "/api/deleteitems",
-            "/api/edititem"
+            "/api/edititem",
+        ]
+    },
+    "admin": {
+        "paths": [
+            "/api/getauctions",
+            "/api/items",
+            "/api/addauction"
         ]
     }
 }

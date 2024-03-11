@@ -6,14 +6,19 @@ export const apiPaths = {
     verifyauthenticatorUrl: apiUrl + "api/verifyauthenticator",
     itemsUrl: apiUrl + "api/items",
     AdditemUrl: apiUrl + "api/additem",
-    DeleteitemUrl: apiUrl + "api/deleteitems"
+    DeleteitemUrl: apiUrl + "api/deleteitems",
+    EdititemUrl: apiUrl + "api/edititem",
+    AuctionsUrl: apiUrl + "api/getauctions",
+    AddAuctionUrl: apiUrl + "api/addauction"
 }
 
 export const masterCaller = {
     callfunc: async function callfunc({ ...params }) {
         const otherParams = ({ ...params }) => {
             let obj = {}
-            if (params.method == "post" || params.method == "DELETE") {
+            if (params.method == "post" ||
+                params.method == "DELETE" ||
+                params.method == "put") {
                 obj["body"] = JSON.stringify(params.body)
             }
             return obj
@@ -64,6 +69,15 @@ export const masterCaller = {
         })
     },
     put: async function put({ ...params }) {
-
+        return this.callfunc({
+            url: params.url,
+            method: "put",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: {
+                ...params.body
+            }
+        })
     }
 }

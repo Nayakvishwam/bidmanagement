@@ -26,7 +26,7 @@ export default function Login() {
         let formData = new FormData(event.target)
         formData = Object.fromEntries(formData)
         const { payload } = await dispatch(loginuser(formData))
-        if (payload.status_code == 200) {
+        if (payload?.status_code == 200) {
             await new Promise((resolve, reject) => {
                 try {
                     Tools.setLocalStorage({ key: "userinfo", value: JSON.stringify(payload.data) })
@@ -40,7 +40,7 @@ export default function Login() {
                 }
             })
         }
-        else {
+        else if(payload) {
             setAlertInfo(preState => ({
                 ...preState,
                 severity: "error",
@@ -53,7 +53,7 @@ export default function Login() {
     return (
         <main>
             <div>
-                <Snackbar open={alertinfo.open} autoHideDuration={6000} onClose={handleClose}>
+                <Snackbar open={alertinfo.open} anchorOrigin={{ vertical: 'top', horizontal: 'center' }} autoHideDuration={6000} onClose={handleClose}>
                     <Alert
                         onClose={handleClose}
                         severity={alertinfo.severity}

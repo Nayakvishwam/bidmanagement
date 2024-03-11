@@ -25,7 +25,7 @@ export default function Registration() {
         let formData = new FormData(event.target)
         formData = Object.fromEntries(formData)
         const { payload } = await dispatch(registerUser(formData))
-        if (payload.status_code == 200) {
+        if (payload?.status_code == 200) {
             setAlertInfo(preState => ({
                 ...preState,
                 severity: "success",
@@ -34,7 +34,7 @@ export default function Registration() {
             }))
             return history.push("/login")
         }
-        else {
+        else if (payload) {
             setAlertInfo(preState => ({
                 ...preState,
                 severity: "error",
@@ -47,7 +47,7 @@ export default function Registration() {
     return (<main>
         <div className="container">
             <div>
-                <Snackbar open={alertinfo.open} autoHideDuration={6000} onClose={handleClose}>
+                <Snackbar open={alertinfo.open} anchorOrigin={{ vertical: 'top', horizontal: 'center' }} autoHideDuration={6000} onClose={handleClose}>
                     <Alert
                         onClose={handleClose}
                         severity={alertinfo.severity}

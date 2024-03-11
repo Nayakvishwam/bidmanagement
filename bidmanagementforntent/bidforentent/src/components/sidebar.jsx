@@ -12,6 +12,27 @@ export default function Sidebar() {
                     <span>Items</span>
                 </Link>
             </li>)}
+            {rights[data.role]?.auctions && (<>
+                <li className="nav-item">
+                    <Link className="nav-link collapsed" data-bs-target="#auctions" data-bs-toggle="collapse">
+                        <i className="ri-at-line"></i>
+                        <span>Auctions</span>
+                        <i className="bi bi-chevron-down ms-auto"></i>
+                    </Link>
+                </li>
+                <ul id="auctions" className="nav-content collapse " data-bs-parent="#sidebar-nav">
+                    <li>
+                        <Link to="/app/auctions">
+                            <i className="bi bi-circle"></i><span>View Auctions</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/app/createauction">
+                            <i className="bi bi-circle"></i><span>Add Auction</span>
+                        </Link>
+                    </li>
+                </ul>
+            </>)}
         </ul>
     </aside>)
 }

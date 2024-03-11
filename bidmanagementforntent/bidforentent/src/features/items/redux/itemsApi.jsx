@@ -11,3 +11,7 @@ export function AddItemData({ ...params }) {
 export function DeleteItems({ ...params }) {
     return masterCaller.delete({ url: apiPaths.DeleteitemUrl, body: params })
 }
+
+export function EditItem({ ...params }) {
+    return masterCaller.put({ url: apiPaths.EdititemUrl, body: params })
+}

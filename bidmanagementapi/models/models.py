@@ -1,5 +1,10 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, CheckConstraint, UniqueConstraint
-from dbconfig import Base, session, roles
+from sqlalchemy import (
+    Boolean, Column,
+    ForeignKey, Integer,
+    String, CheckConstraint,
+    UniqueConstraint, Text)
+from sqlalchemy.orm import relationship
+from dbconfig import Base
 
 
 class Companies(Base):
@@ -7,6 +12,9 @@ class Companies(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
+
+    auction_line_item = relationship(
+        'AuctionsLinesItems', back_populates='item')
 
 
 class Roles(Base):
@@ -20,6 +28,43 @@ class Roles(Base):
         CheckConstraint("name IN ('superadmin', 'admin')",
                         name='name_valid'),
     )
+
+
+class Auctions(Base):
+    __tablename__ = "auction"
+
+    id = Column(Integer, autoincrement=True,
+                primary_key=True, index=True)
+    description = Column(Text, index=True)
+    company_id = Column(
+        Integer,
+        ForeignKey('company.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    company = relationship('Companies', back_populates='auction')
+    auction_line = relationship(
+        'AuctionsLinesItems', back_populates='auction')
+
+
+class AuctionsLinesItems(Base):
+    __tablename__ = "auction_line_item"
+
+    id = Column(Integer, autoincrement=True,
+                primary_key=True, index=True)
+    auction_id = Column(
+        Integer,
+        ForeignKey('auction.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    item_id = Column(
+        Integer,
+        ForeignKey('item.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    quantity = Column(Integer, index=True)
+
+    auction = relationship('Auctions', back_populates='auction_line')
+    item = relationship('Items', back_populates='auction_line')
 
 
 class Users(Base):
@@ -42,7 +87,6 @@ class Users(Base):
     __table_args__ = (
         UniqueConstraint('email', name='email_uniq'),
     )
-# Add event listener for table creation/migration
 
 
 class Items(Base):

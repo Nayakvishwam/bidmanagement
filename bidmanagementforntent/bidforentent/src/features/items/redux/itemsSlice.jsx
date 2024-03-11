@@ -1,16 +1,18 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { ItemData, AddItemData, DeleteItems } from "./itemsApi";
+import { ItemData, AddItemData, DeleteItems, EditItem } from "./itemsApi";
 
 const initialstate = {
     response: [],
     loading: true,
     itemaddresponse: {},
-    deleteitemsresponse: {}
+    deleteitemsresponse: {},
+    edititemsresponse: {}
 }
 const actions = {
     ITEMSAPI: "itemsApi/ITEMSAPI",
     ADDITEMAPI: "additemApi/ADDITEMAPI",
-    DELETEITEMSAPI: "deleteitemApi/DELETEITEMSAPI"
+    DELETEITEMSAPI: "deleteitemApi/DELETEITEMSAPI",
+    EDITITEMSAPI: "edititemApi/EDITITEMSAPI"
 }
 export const itemApi = createAsyncThunk(
     actions.ITEMSAPI,
@@ -31,6 +33,14 @@ export const deleteitemApi = createAsyncThunk(
     actions.DELETEITEMSAPI,
     async (payload) => {
         const response = await DeleteItems(payload)
+        return response
+    }
+)
+
+export const edititemApi = createAsyncThunk(
+    actions.EDITITEMSAPI,
+    async (payload) => {
+        const response = await EditItem(payload)
         return response
     }
 )
@@ -73,6 +83,18 @@ export const itemsSlice = createSlice({
             }).addCase(deleteitemApi.rejected, (state, action) => {
                 const { message: msg } = action.error
                 state.deleteitemsresponse = msg
+                state.loading = false
+            })
+        builder.addCase(edititemApi.pending, (state) => {
+            state.loading = true
+        })
+            .addCase(edititemApi.fulfilled, (state, action) => {
+                const data = action.payload
+                state.loading = false
+                state.edititemsresponse = data
+            }).addCase(edititemApi.rejected, (state, action) => {
+                const { message: msg } = action.error
+                state.edititemsresponse = msg
                 state.loading = false
             })
     }

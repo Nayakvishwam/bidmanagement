@@ -1,14 +1,28 @@
 export const roles = {
-    admin: "Admin"
+    admin: "Admin",
+    superadmin: "Super Admin",
 }
 export const rights = {
     superadmin: {
         "items": true
+    },
+    admin: {
+        "auctions": true,
+        "createAuctions": true
+
     }
 }
 export const pagespaths = {
-    "/app/items": {
+    "/app/items/": {
         name: "Items",
         icon: "bi bi-grid"
+    },
+    "/app/auctions/": {
+        name: "Auctions",
+        icon: " ri-at-line"
+    },
+    "/app/createauction/": {
+        name: "Create Auction",
+        icon: " ri-at-line"
     }
 }
