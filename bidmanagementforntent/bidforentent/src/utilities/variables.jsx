@@ -26,3 +26,12 @@ export const pagespaths = {
         icon: " ri-at-line"
     }
 }
+
+export const roleredirect = {
+    superadmin: {
+        pagepath: "/app/items/"
+    },
+    admin: {
+        pagepath: "/app/auctions/"
+    }
+}

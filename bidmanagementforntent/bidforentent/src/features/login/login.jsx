@@ -6,6 +6,8 @@ import { Snackbar, Alert } from "@mui/material";
 import $ from "jquery"
 import { history } from "../../app/history";
 import Tools from "../../tools/tools";
+import { roleredirect } from "../../utilities/variables";
+
 export default function Login() {
     const alertdefaultdata = {
         severity: "",
@@ -34,13 +36,13 @@ export default function Login() {
                 } catch (error) {
                     reject(error)
                 }
-            }).then(response => {
+            }).then(async (response) => {
                 if (response?.finish) {
-                    return history.push("/app")
+                    return history.push(roleredirect[payload.data.rolename].pagepath)
                 }
             })
         }
-        else if(payload) {
+        else if (payload) {
             setAlertInfo(preState => ({
                 ...preState,
                 severity: "error",

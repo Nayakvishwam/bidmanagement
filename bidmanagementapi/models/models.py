@@ -13,8 +13,7 @@ class Companies(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
 
-    auction_line_item = relationship(
-        'AuctionsLinesItems', back_populates='item')
+    auction_company = relationship('Auctions', back_populates='company')
 
 
 class Roles(Base):
@@ -41,7 +40,7 @@ class Auctions(Base):
         ForeignKey('company.id', ondelete='CASCADE'),
         nullable=False
     )
-    company = relationship('Companies', back_populates='auction')
+    company = relationship('Companies', back_populates='auction_company')
     auction_line = relationship(
         'AuctionsLinesItems', back_populates='auction')
 
@@ -64,7 +63,7 @@ class AuctionsLinesItems(Base):
     quantity = Column(Integer, index=True)
 
     auction = relationship('Auctions', back_populates='auction_line')
-    item = relationship('Items', back_populates='auction_line')
+    item = relationship('Items', back_populates='line_item')
 
 
 class Users(Base):
@@ -99,3 +98,6 @@ class Items(Base):
     __table_args__ = (
         UniqueConstraint('name', name='itemname_uniq'),
     )
+
+    line_item = relationship(
+        'AuctionsLinesItems', back_populates='item')

@@ -2,8 +2,9 @@ import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { auctions } from "./redux/auctionsSlice"
 import { getUserDetails } from "../../tools/tools"
+import "../../assets/css/styles.css"
 import Loader from "../../components/loader"
-import { Box } from "@mui/material"
+import { Box, Link } from "@mui/material"
 export default function Auctions() {
     const dispatch = useDispatch()
     const { response, loading } = useSelector(state => state.auctionsReducer)
@@ -21,18 +22,31 @@ export default function Auctions() {
             <section className="section">
                 <div className="row">
                     {
-                        response?.map((auction) => {
+                        response?.map((auction, index) => {
                             return (
-                                <div className="col-lg-3">
+                                <div className="col-lg-3" key={index}>
                                     <div className="card">
-                                        <div class="card-header">{auction.id}</div>
+                                        <div className="filter">
+                                            <Link style={{ cursor: "pointer", color: "black", textDecoration: "none" }} className="icon show" data-bs-toggle="dropdown" aria-expanded="true"><i className="bi bi-three-dots"></i></Link>
+                                            <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                                <li><Link style={{ cursor: "pointer", color: "black", textDecoration: "none" }} className="dropdown-item">View More</Link></li>
+                                            </ul>
+                                        </div>
+                                        <div className="card-header">Auction :- {auction.id}</div>
                                         <div className="card-body">
-                                            <h5 class="card-title">Auction</h5>
                                             <p className="card-text">
                                                 Description :-
                                                 {auction.description}
                                             </p>
-                                            Company Name :- {auction.companyname}
+                                            <p className="card-text">
+                                                Company Name :- {auction.companyname}
+                                            </p>
+                                            <p className="card-text">
+                                                Item :- {auction.itemname}
+                                            </p>
+                                            <p className="card-text">
+                                                Quantity :- {auction.quantity}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

@@ -9,6 +9,6 @@ export default function CheckRights({ ...params }) {
         if (rightsinfo[params.part]) {
             return params?.children
         }
+        return <RightsPopUp />
     }
-    return <RightsPopUp />
 }

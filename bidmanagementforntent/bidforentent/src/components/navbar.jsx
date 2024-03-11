@@ -1,11 +1,13 @@
 import { Link as MuiLink } from "@mui/material"
 import { useState } from "react"
 import $ from "jquery"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
 import { pagespaths, roles } from "../utilities/variables"
 import { history } from "../app/history"
 import userimage from "../assets/faces/User.png"
 import { useLocation } from "react-router-dom"
+import { clearLoginResponse } from "../features/login/redux/loginSlice"
+import { clearAuthenticatorResponse } from "../features/verifyautheticator/redux/authenticatorSlice"
 export default function Navbar() {
     const [tooglesidebar, setToogleSidebar] = useState(false)
     const location = useLocation();
@@ -13,6 +15,7 @@ export default function Navbar() {
     if (pathname.charAt(pathname.length - 1) != "/") {
         pathname = pathname + "/"
     }
+    const dispatch = useDispatch()
     const { response } = useSelector(state => state.authenticatorReducer)
     return <header id="header" className="header fixed-top d-flex align-items-center">
 
@@ -55,8 +58,10 @@ export default function Navbar() {
                                 <span>My Profile</span>
                             </MuiLink>
                         </li>
-                        <li onClick={() => {
+                        <li onClick={async () => {
                             localStorage.removeItem("userinfo")
+                            await dispatch(clearAuthenticatorResponse())
+                            await dispatch(clearLoginResponse())
                             history.push("/login")
                         }}>
                             <MuiLink style={{ textDecoration: "none", color: "black", cursor: "pointer" }} className="dropdown-item d-flex align-items-center" >

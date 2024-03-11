@@ -21,6 +21,11 @@ export const authenticator = createAsyncThunk(
 export const authenticatorSlice = createSlice({
     name: "authenticator",
     initialState: initialstate,
+    reducers: {
+        clearAuthenticatorResponse: (state) => {
+            state.response = {}
+        }
+    },
     extraReducers: function (builder) {
         builder.addCase(authenticator.pending, (state) => {
             state.loading = true
@@ -35,4 +40,5 @@ export const authenticatorSlice = createSlice({
 
 
 export const authenticatorActions = authenticatorSlice.actions;
+export const { clearAuthenticatorResponse } = authenticatorSlice.actions
 export default authenticatorSlice.reducer;

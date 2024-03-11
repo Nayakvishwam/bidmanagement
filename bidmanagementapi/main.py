@@ -164,10 +164,12 @@ def loginuser(creds: Credentials):
                 "user_id": User.id,
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=3)  # Token expiration time
             }, secretkey)
+            role = getroleofuserdetails(User.role_id)
             userdata = {
                 "userid": User.id,
                 "email": User.email,
                 "roleid": User.role_id,
+                "rolename": role.name,
                 "company_id": User.company_id,
                 "token": token
             }
@@ -325,7 +327,7 @@ async def additem(token: str = Body(..., embed=True),
 @router.post("/getauctions")
 async def getautctions(token: str = Body(..., embed=True), db: Session = db_dependency):
     '''
-    /getautctions- Used To Get Auctions
+    /getauctions- Used To Get Auctions
     '''
     authentication = checkaccess_rights(token=token, path="/api/getauctions")
     if authentication.get("allow"):
@@ -333,14 +335,17 @@ async def getautctions(token: str = Body(..., embed=True), db: Session = db_depe
         data = db.query(models.Companies, models.Auctions, models.AuctionsLinesItems, models. Items).\
             join(models.Auctions, models.Companies.id == models.Auctions.company_id).\
             join(models.AuctionsLinesItems, models.Auctions.id == models.AuctionsLinesItems.auction_id).\
-            join(models.Items, models.AuctionsLinesItems.item_id == models.Items.id).\
-            data = data.all()
-        for company, auction in data:
+            join(models.Items, models.AuctionsLinesItems.item_id == models.Items.id)
+        data = data.all()
+        for company, auction, auction_line, item in data:
             info = {
                 "id": auction.id,
                 "description": auction.description,
                 "companyname": company.name,
-                "companyid": company.id
+                "companyid": company.id,
+                "itemname": item.name,
+                "quantity": auction_line.quantity,
+                "itemid": item.id
             }
             maindata.append(info)
         return {"status_code": 200, "data": maindata, "message": "Auctions Details"}
